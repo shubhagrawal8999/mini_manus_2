@@ -17,14 +17,7 @@ class Settings(BaseSettings):
     # ── Telegram ──────────────────────────────────────────────────────────────
     telegram_bot_token: str
     telegram_webhook_url: str = ""
-telegram_allowed_users: str = ""
-
-@property
-def allowed_user_ids(self) -> list[int]:
-    if not self.telegram_allowed_users.strip():
-        return []
-    raw = self.telegram_allowed_users.strip().strip("[]")
-    return [int(uid.strip()) for uid in raw.split(",") if uid.strip()]
+    telegram_allowed_users: str = ""
 
     # ── LLMs ──────────────────────────────────────────────────────────────────
     deepseek_api_key: str
@@ -56,6 +49,13 @@ def allowed_user_ids(self) -> list[int]:
     max_retries: int = 3
     retry_delay_seconds: int = 5
     screenshot_save_path: str = "./screenshots"
+
+    @property
+    def allowed_user_ids(self) -> list[int]:
+        if not self.telegram_allowed_users.strip():
+            return []
+        raw = self.telegram_allowed_users.strip().strip("[]")
+        return [int(uid.strip()) for uid in raw.split(",") if uid.strip()]
 
     @property
     def is_production(self) -> bool:
