@@ -6,6 +6,7 @@ not raw HTML. Way better than calling Google directly.
 
 Optional: screenshot any URL using Playwright.
 """
+import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
@@ -50,7 +51,8 @@ async def deep_search(query: str, max_results: int = 5) -> str:
 
     try:
         client = _get_tavily()
-        response = client.search(
+        response = await asyncio.to_thread(
+            client.search,
             query=query,
             search_depth="advanced",    # 'basic' is faster, 'advanced' is more thorough
             max_results=max_results,
