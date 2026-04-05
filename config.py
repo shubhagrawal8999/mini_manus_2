@@ -17,14 +17,14 @@ class Settings(BaseSettings):
     # ── Telegram ──────────────────────────────────────────────────────────────
     telegram_bot_token: str
     telegram_webhook_url: str = ""
-    telegram_allowed_users: list[int] = []
+telegram_allowed_users: str = ""
 
-    @field_validator("telegram_allowed_users", mode="before")
-    @classmethod
-    def parse_allowed_users(cls, v):
-        if isinstance(v, str):
-            return [int(uid.strip()) for uid in v.split(",") if uid.strip()]
-        return v
+@property
+def allowed_user_ids(self) -> list[int]:
+    if not self.telegram_allowed_users.strip():
+        return []
+    raw = self.telegram_allowed_users.strip().strip("[]")
+    return [int(uid.strip()) for uid in raw.split(",") if uid.strip()]
 
     # ── LLMs ──────────────────────────────────────────────────────────────────
     deepseek_api_key: str
