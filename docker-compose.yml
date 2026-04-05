@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  agent:
+    build: .
+    container_name: personal-ai-agent
+    env_file: .env
+    volumes:
+      - ./data:/app/data           # SQLite database
+      - ./screenshots:/app/screenshots
+      - ./secrets:/app/secrets     # Gmail OAuth tokens
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
