@@ -70,10 +70,10 @@ class AgentScheduler:
         Generate and post daily LinkedIn content.
         Customize the prompt below to match your niche/voice.
         """
-        if not settings.telegram_allowed_users:
+        if not settings.allowed_user_ids:
             return
 
-        user_id = settings.telegram_allowed_users[0]  # Post on behalf of primary user
+        user_id = settings.allowed_user_ids[0]  # Post on behalf of primary user
 
         await self.send(user_id, "📅 Running your daily LinkedIn post automation...")
 
