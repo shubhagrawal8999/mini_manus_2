@@ -44,7 +44,7 @@ async def _is_allowed(user_id: int) -> bool:
     """Check if the user is in the allowlist."""
     if not settings.telegram_allowed_users:
         return True  # If no allowlist, allow everyone (dev mode)
-    return user_id in settings.telegram_allowed_users
+    return user_id in settings.allowed_user_ids
 
 
 async def handle_start(update: Update, context) -> None:
