@@ -15,9 +15,10 @@ class Settings(BaseSettings):
             )
         
             # ── Telegram ──────────────────────────────────────────────────────────────
-            telegram_bot_token: str
-            telegram_webhook_url: str = ""
-            telegram_allowed_users: str = ""
+          # ── LinkedIn ──────────────────────────────────────────────────────────────
+          # ── LinkedIn ──────────────────────────────────────────────────────────────
+            linkedin_email: str = ""
+            linkedin_password: str = ""
         
             # ── LLMs ──────────────────────────────────────────────────────────────────
             deepseek_api_key: str
@@ -48,7 +49,7 @@ class Settings(BaseSettings):
             log_level: str = "INFO"
             max_retries: int = 3
             retry_delay_seconds: int = 5
-            screenshot_save_path: str = "./screenshots"
+           
         
             @property
             def allowed_user_ids(self) -> list[int]:
