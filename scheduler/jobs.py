@@ -92,10 +92,10 @@ class AgentScheduler:
 
     async def morning_email_digest(self) -> None:
         """Send a morning summary of unread emails."""
-        if not settings.telegram_allowed_users:
+        if not settings.allowed_user_ids:
             return
 
-        user_id = settings.telegram_allowed_users[0]
+        user_id = settings.allowed_user_ids[0]
 
         prompt = (
             "Check my Gmail inbox and give me a morning digest: "
@@ -110,10 +110,10 @@ class AgentScheduler:
 
     async def weekly_summary(self) -> None:
         """Send a weekly summary of all agent activities."""
-        if not settings.telegram_allowed_users:
+        if not settings.allowed_user_ids:
             return
 
-        user_id = settings.telegram_allowed_users[0]
+        user_id = settings.allowed_user_ids[0]
 
         activities = await self.memory.get_recent_activities(user_id, limit=50)
         if not activities:

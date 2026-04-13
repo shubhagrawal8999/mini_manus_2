@@ -191,7 +191,7 @@ async def lifespan(app: FastAPI):
     )
 
     # Start scheduler
-    scheduler = AgentScheduler(send_telegram_fn=send_telegram_message)
+    scheduler = AgentScheduler(send_telegram_message_fn=send_telegram_message)
     scheduler.start()
 
     if settings.telegram_webhook_url and settings.is_production:

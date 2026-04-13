@@ -9,6 +9,7 @@ Capabilities:
   - send_email: Compose and send an email
   - search_emails: Search by query (same syntax as Gmail search bar)
 """
+import asyncio
 import base64
 import json
 import os
@@ -35,7 +36,7 @@ SCOPES = [
 ]
 
 
-def _get_gmail_service():
+async def _get_gmail_service():
     """Authenticate and return Gmail API service. Caches token locally."""
     creds = None
     token_path = settings.gmail_token_path
@@ -47,20 +48,20 @@ def _get_gmail_service():
     # If credentials are missing or expired, refresh or re-authorize
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            await asyncio.to_thread(creds.refresh, Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 settings.gmail_credentials_path, SCOPES
             )
             # Opens browser for authorization on first run
-            creds = flow.run_local_server(port=0)
+            creds = await asyncio.to_thread(flow.run_local_server, port=0)
 
         # Save the token for next time
         Path(token_path).parent.mkdir(parents=True, exist_ok=True)
         with open(token_path, "w") as f:
             f.write(creds.to_json())
 
-    return build("gmail", "v1", credentials=creds)
+    return await asyncio.to_thread(build, "gmail", "v1", credentials=creds)
 
 
 def _decode_body(part: dict) -> str:
@@ -85,9 +86,9 @@ async def read_emails(max_results: int = 5, label: str = "INBOX") -> str:
         label: Gmail label to read from. Defaults to INBOX.
     """
     try:
-        service = _get_gmail_service()
-        result = (
-            service.users()
+        service = await _get_gmail_service()
+        result = await asyncio.to_thread(
+            lambda: service.users()
             .messages()
             .list(userId="me", maxResults=max_results, labelIds=[label])
             .execute()
@@ -98,8 +99,8 @@ async def read_emails(max_results: int = 5, label: str = "INBOX") -> str:
 
         email_summaries = []
         for msg in messages:
-            msg_data = (
-                service.users()
+            msg_data = await asyncio.to_thread(
+                lambda: service.users()
                 .messages()
                 .get(userId="me", id=msg["id"], format="metadata",
                      metadataHeaders=["From", "Subject", "Date"])
@@ -141,7 +142,7 @@ async def send_email(to: str, subject: str, body: str, cc: str = "") -> str:
         cc: Optional CC email address.
     """
     try:
-        service = _get_gmail_service()
+        service = await _get_gmail_service()
 
         message = MIMEMultipart("alternative")
         message["to"] = to
@@ -153,9 +154,11 @@ async def send_email(to: str, subject: str, body: str, cc: str = "") -> str:
         message.attach(MIMEText(body, "plain"))
 
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
-        service.users().messages().send(
-            userId="me", body={"raw": raw}
-        ).execute()
+        await asyncio.to_thread(
+            lambda: service.users().messages().send(
+                userId="me", body={"raw": raw}
+            ).execute()
+        )
 
         logger.info("email_sent", to=to, subject=subject)
         return f"Email sent successfully to {to} with subject '{subject}'."
@@ -179,9 +182,9 @@ async def search_emails(query: str, max_results: int = 5) -> str:
         max_results: Number of results to return.
     """
     try:
-        service = _get_gmail_service()
-        result = (
-            service.users()
+        service = await _get_gmail_service()
+        result = await asyncio.to_thread(
+            lambda: service.users()
             .messages()
             .list(userId="me", q=query, maxResults=max_results)
             .execute()
@@ -192,8 +195,8 @@ async def search_emails(query: str, max_results: int = 5) -> str:
 
         summaries = []
         for msg in messages:
-            msg_data = (
-                service.users()
+            msg_data = await asyncio.to_thread(
+                lambda: service.users()
                 .messages()
                 .get(userId="me", id=msg["id"], format="metadata",
                      metadataHeaders=["From", "Subject", "Date"])
